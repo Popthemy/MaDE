@@ -75,6 +75,16 @@ export default function DataPanel({ template, data, onDataChange, onGenerate, is
     onDataChange(data.filter(row => row.id !== id));
   };
 
+  const isRowMissingFields = (row: DesignData) => {
+    return template.placeholders.some(p => {
+      if (p.isFrame) return false;
+      const val = row.values[p.key];
+      const hasVal = val !== undefined && val !== null && String(val).trim() !== '';
+      const isOptional = p.type === 'image' && !!p.staticUrl;
+      return !hasVal && !isOptional;
+    });
+  };
+
   // Get labels from template placeholders for the CSV guide
   const templateLabels = Array.from(new Set(
     template.placeholders
@@ -231,71 +241,86 @@ export default function DataPanel({ template, data, onDataChange, onGenerate, is
                       <th className="p-6 border-b border-slate-100 w-16"></th>
                    </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                   {data.map((row, index) => (
-                      <tr key={row.id} className="hover:bg-brand-primary/[0.02] transition-colors group">
-                         <td className="p-6 text-xs text-slate-300 font-mono italic">{index + 1}</td>
-                         {allKeys.map(key => (
-                            <td key={key} className="p-2 border-slate-100">
-                               <div className="grow px-4">
-                                  {isImageKey(key) ? (
-                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 overflow-hidden relative shadow-inner">
-                                           {row.values[key] ? (
-                                              <img src={row.values[key]} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                                           ) : template.placeholders.find(p => p.key === key)?.staticUrl ? (
-                                              <img 
-                                                 src={template.placeholders.find(p => p.key === key)?.staticUrl} 
-                                                 className="w-full h-full object-cover opacity-10" 
-                                                 referrerPolicy="no-referrer" 
-                                              />
-                                           ) : (
-                                              <ImageIcon size={16} className="text-slate-300" />
-                                           )}
-                                        </div>
-                                        <input 
-                                           value={row.values[key] || ''}
-                                           onChange={(e) => updateRow(row.id, key, e.target.value)}
-                                           placeholder={template.placeholders.find(p => p.key === key)?.staticUrl ? "Using Template Default..." : "Image URL..."}
-                                           className="grow bg-slate-50/50 border-none rounded-lg px-3 py-2.5 text-xs focus:bg-white focus:ring-1 focus:ring-brand-primary/20 transition-all outline-none font-medium text-slate-600"
-                                        />
-                                        <label className="shrink-0 p-2 hover:bg-brand-primary/10 text-brand-primary rounded-xl cursor-pointer transition-all">
-                                           <Upload size={16} />
-                                           <input 
-                                              type="file" 
-                                               className="hidden" 
-                                              accept="image/*" 
-                                              onChange={(e) => {
-                                                 const file = e.target.files?.[0];
-                                                 if (file) {
-                                                    const url = URL.createObjectURL(file);
-                                                    updateRow(row.id, key, url);
-                                                 }
-                                              }}
-                                           />
-                                        </label>
-                                     </div>
-                                  ) : (
-                                     <input 
-                                        value={row.values[key] || ''}
-                                        onChange={(e) => updateRow(row.id, key, e.target.value)}
-                                        placeholder={`Enter ${template.placeholders.find(p => p.key === key)?.label || key}...`}
-                                        className="w-full bg-slate-50/50 border-none rounded-lg px-3 py-2.5 text-xs focus:bg-white focus:ring-1 focus:ring-brand-primary/20 transition-all outline-none font-medium text-slate-600"
-                                     />
-                                  )}
-                               </div>
-                            </td>
-                         ))}
-                         <td className="p-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button 
-                               onClick={() => removeRow(row.id)}
-                               className="p-2.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                            >
-                               <Trash2 size={18} />
-                            </button>
-                         </td>
-                      </tr>
-                   ))}
+                 <tbody className="divide-y divide-slate-100">
+                   {data.map((row, index) => {
+                      const isMissing = isRowMissingFields(row);
+                      return (
+                        <tr key={row.id} className={`hover:bg-brand-primary/[0.02] transition-colors group ${isMissing ? 'bg-red-50/30' : ''}`}>
+                           <td className="p-6 text-xs text-slate-300 font-mono italic">
+                              <div className="flex items-center gap-2">
+                                 {index + 1}
+                                 {isMissing && <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" title="Missing required fields" />}
+                              </div>
+                           </td>
+                           {allKeys.map(key => {
+                              const placeholder = template.placeholders.find(p => p.key === key);
+                              const isRequired = !!placeholder && (!placeholder.staticUrl || placeholder.isFrame);
+                              const val = row.values[key];
+                              const isEmpty = isRequired && (val === undefined || val === null || String(val).trim() === '');
+                              
+                              return (
+                                <td key={key} className="p-2 border-slate-100">
+                                   <div className="grow px-4">
+                                      {isImageKey(key) ? (
+                                         <div className="flex items-center gap-3">
+                                            <div className={`w-10 h-10 rounded-xl bg-slate-50 border flex items-center justify-center shrink-0 overflow-hidden relative shadow-inner transition-all ${isEmpty ? 'border-red-200 ring-2 ring-red-50' : 'border-slate-100'}`}>
+                                               {row.values[key] ? (
+                                                  <img src={row.values[key]} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                               ) : template.placeholders.find(p => p.key === key)?.staticUrl ? (
+                                                  <img 
+                                                     src={template.placeholders.find(p => p.key === key)?.staticUrl} 
+                                                     className="w-full h-full object-cover opacity-10" 
+                                                     referrerPolicy="no-referrer" 
+                                                  />
+                                               ) : (
+                                                  <ImageIcon size={16} className={isEmpty ? "text-red-300" : "text-slate-300"} />
+                                               )}
+                                            </div>
+                                            <input 
+                                               value={row.values[key] || ''}
+                                               onChange={(e) => updateRow(row.id, key, e.target.value)}
+                                               placeholder={template.placeholders.find(p => p.key === key)?.staticUrl ? "Using Template Default..." : "Image URL..."}
+                                               className={`grow bg-slate-50/50 border rounded-lg px-3 py-2.5 text-xs focus:bg-white focus:ring-1 transition-all outline-none font-medium text-slate-600 ${isEmpty ? 'border-red-100 focus:ring-red-200' : 'border-transparent focus:ring-brand-primary/20'}`}
+                                            />
+                                            <label className={`shrink-0 p-2 hover:bg-brand-primary/10 rounded-xl cursor-pointer transition-all ${isEmpty ? 'text-red-400' : 'text-brand-primary'}`}>
+                                               <Upload size={16} />
+                                               <input 
+                                                  type="file" 
+                                                   className="hidden" 
+                                                  accept="image/*" 
+                                                  onChange={(e) => {
+                                                     const file = e.target.files?.[0];
+                                                     if (file) {
+                                                        const url = URL.createObjectURL(file);
+                                                        updateRow(row.id, key, url);
+                                                     }
+                                                  }}
+                                               />
+                                            </label>
+                                         </div>
+                                      ) : (
+                                         <input 
+                                            value={row.values[key] || ''}
+                                            onChange={(e) => updateRow(row.id, key, e.target.value)}
+                                            placeholder={`Enter ${template.placeholders.find(p => p.key === key)?.label || key}...`}
+                                            className={`w-full bg-slate-50/50 border rounded-lg px-3 py-2.5 text-xs focus:bg-white focus:ring-1 transition-all outline-none font-medium text-slate-600 ${isEmpty ? 'border-red-100 focus:ring-red-200 bg-red-50/50' : 'border-transparent focus:ring-brand-primary/20'}`}
+                                         />
+                                      )}
+                                   </div>
+                                </td>
+                              );
+                           })}
+                           <td className="p-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button 
+                                 onClick={() => removeRow(row.id)}
+                                 className="p-2.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                              >
+                                 <Trash2 size={18} />
+                              </button>
+                           </td>
+                        </tr>
+                      );
+                   })}
                    {data.length === 0 && (
                       <tr>
                         <td colSpan={allKeys.length + 3} className="p-16 text-center text-slate-400 italic bg-slate-50/30">

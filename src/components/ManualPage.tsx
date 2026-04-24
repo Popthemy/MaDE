@@ -58,7 +58,7 @@ export default function ManualPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {[
-                  { title: 'Churches', desc: 'Fellowship celebrations, birth announcements, and weekly quotes.', icon: <Zap size={18} /> },
+                  { title: 'Churches', desc: 'Personality of the week (Face of the week), fellowship celebrations, and testimonials.', icon: <Zap size={18} /> },
                   { title: 'Schools', desc: 'Graduation certificates, achievement awards, and student IDs.', icon: <GraduationCap size={18} /> },
                   { title: 'Teams', desc: 'Professional onboarding, employee of the month, and event tags.', icon: <Users size={18} /> },
                   { title: 'Creators', desc: 'Branded quote batches, testimonial series, and social media blitz scrolls.', icon: <Sparkles size={18} /> }
@@ -115,45 +115,43 @@ export default function ManualPage() {
               <div className="space-y-4">
                 <h3 className="text-2xl font-bold">Dynamic Mapping</h3>
                 <p className="text-slate-500 leading-relaxed">
-                  Use the <span className="font-bold text-slate-900 underline">Property Field</span> in the designer sidebar to connect elements to your data. Whatever key you use there (e.g., <code className="bg-slate-100 px-1.5 rounded text-xs">firstName</code>) must match your CSV column headers exactly.
+                  Connect UI elements to your data using <span className="font-bold text-slate-900 underline">Mapping Keys</span>. Use the "Sync to Label" utility to automatically generate clean, slug-ready keys from your human-readable labels.
                 </p>
               </div>
               <div className="pt-6 border-t border-slate-50">
-                <p className="text-[10px] uppercase font-bold text-brand-primary tracking-widest mb-3">Professional Insight</p>
+                <p className="text-[10px] uppercase font-bold text-brand-primary tracking-widest mb-3">Integrity Check</p>
                 <div className="p-4 bg-slate-50 rounded-xl border-l-4 border-brand-primary italic text-slate-500 text-sm">
-                  Mappings are case-sensitive. Always verify your CSV keys match your design fields for perfect, high-integrity automation.
+                  The system highlights missing fields in red within the Data Panel, ensuring no record is exported with insufficient data.
                 </div>
               </div>
             </div>
 
-            {/* Overlays & Backdrops */}
+            {/* Typography & Auto-fitting */}
             <div className="p-10 bg-white border border-slate-100 rounded-[2.5rem] space-y-6 shadow-sm hover:shadow-2xl transition-all group">
               <div className="w-16 h-16 bg-brand-secondary/10 rounded-2xl flex items-center justify-center text-brand-secondary group-hover:scale-110 transition-all">
-                <Layers size={32} />
+                <Layout size={32} />
               </div>
               <div className="space-y-4">
-                <h3 className="text-2xl font-bold">Global Aesthetics</h3>
+                <h3 className="text-2xl font-bold">Intelligent Typography</h3>
                 <p className="text-slate-500 leading-relaxed">
-                  Apply a <span className="font-bold text-slate-900 underline">Backdrop</span> for full-canvas atmosphere, or a <span className="font-bold text-slate-900 underline">Frame Overlay</span> to add borders and branded texture that stays consistent across every single generated asset.
+                  Our rendering engine uses <span className="font-bold text-slate-900 underline">Heuristic Shrinking</span>. Text automatically scales down to fit both the width and height constraints of its container, maintaining legibility even with long data strings.
                 </p>
               </div>
-              <img 
-                src="https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&q=80&w=400" 
-                alt="Overlay Demo" 
-                className="w-full h-40 object-cover rounded-[1.5rem] mt-4 border border-slate-100 shadow-inner group-hover:grayscale-0 grayscale transition-all duration-500"
-                referrerPolicy="no-referrer"
-              />
+              <div className="flex gap-2">
+                <div className="px-3 py-1 bg-slate-100 rounded-lg text-[10px] font-black">BOLD SUPPORT</div>
+                <div className="px-3 py-1 bg-slate-100 rounded-lg text-[10px] font-black">AUTO-SHRINK</div>
+              </div>
             </div>
 
-            {/* Color Strategy */}
+            {/* Scale & Responsiveness */}
             <div className="p-10 bg-white border border-slate-100 rounded-[2.5rem] space-y-6 shadow-sm hover:shadow-2xl transition-all group">
               <div className="w-16 h-16 bg-brand-accent/10 rounded-2xl flex items-center justify-center text-brand-accent group-hover:scale-110 transition-all">
                 <Palette size={32} />
               </div>
               <div className="space-y-4">
-                <h3 className="text-2xl font-bold">Smart Color Logic</h3>
+                <h3 className="text-2xl font-bold">Adaptive Canvas</h3>
                 <p className="text-slate-500 leading-relaxed">
-                  Applying a default color ensures every item in the batch stays on-brand. However, you can toggle <span className="font-bold text-slate-900 underline">Individual Modification</span> to give specific items unique accents based on achievement tiers.
+                  The designer features a <span className="font-bold text-slate-900 underline">Responsive Stage</span> that intelligently scales your template to fit your screen size while maintaining pixel-perfect proportions for export.
                 </p>
               </div>
               <div className="flex gap-3 pt-4">
@@ -161,7 +159,6 @@ export default function ManualPage() {
                 <div className="w-10 h-10 rounded-2xl bg-brand-secondary shadow-lg shadow-brand-secondary/20 -rotate-6" />
                 <div className="w-10 h-10 rounded-2xl bg-brand-accent shadow-lg shadow-brand-accent/20 rotate-12" />
               </div>
-              <p className="text-xs text-slate-400 mt-4 italic font-medium">Example: Use Gold (#FFD700) for "Distinction" and Purple (#7C3AED) for "Merit" within the same batch.</p>
             </div>
           </div>
 
@@ -221,7 +218,7 @@ export default function ManualPage() {
           </div>
           
           <div className="mt-32 text-center text-[10px] text-slate-300 uppercase tracking-[0.4em] font-bold">
-            © 2026 MassDesign Documentation | Version 2.0.4-Lagos
+            © 2026 MassDesign Documentation | Version 2.1.0-Lagos
           </div>
         </div>
       </main>
