@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Placeholder, Template, DesignData } from '../types';
 import { DesignerToolbar } from './designer/DesignerToolbar';
 import { CanvasArea } from './designer/CanvasArea';
+import { useHistory } from '../hooks/useHistory';
+import { Undo2, Redo2 } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface Props {
   template: Template;
@@ -10,11 +13,34 @@ interface Props {
 }
 
 export default function TemplateDesigner({ template, onChange, dataSample }: Props) {
+  const { 
+    state: currentTemplate, 
+    set: setHistory, 
+    undo, 
+    redo, 
+    canUndo, 
+    canRedo 
+  } = useHistory(template);
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Sync with prop when template ID changes (e.g. new template from gallery)
+  useEffect(() => {
+    if (template.id !== currentTemplate.id) {
+       setHistory(template);
+    }
+  }, [template.id]);
+
+  // Sync back to parent
+  useEffect(() => {
+    if (currentTemplate !== template) {
+      onChange(currentTemplate);
+    }
+  }, [currentTemplate]);
 
   const addPlaceholder = (type: 'text' | 'image', isFrame = false) => {
     const newId = `p-${Date.now()}`;
-    const count = template.placeholders.filter(p => p.type === type).length;
+    const count = currentTemplate.placeholders.filter(p => p.type === type).length;
     const keyBase = isFrame ? 'frame' : (type === 'text' ? 'field' : 'photo');
     
     const newPlaceholder: Placeholder = {
@@ -29,35 +55,45 @@ export default function TemplateDesigner({ template, onChange, dataSample }: Pro
       isFrame,
       ...(type === 'text' ? { fontSize: 24, fill: '#FFFFFF', fontFamily: 'Inter', align: 'left' } : {}),
     };
-    onChange({
-      ...template,
-      placeholders: [...template.placeholders, newPlaceholder],
+    setHistory({
+      ...currentTemplate,
+      placeholders: [...currentTemplate.placeholders, newPlaceholder],
     });
     setSelectedId(newId);
   };
 
   const updatePlaceholder = (id: string, attr: Partial<Placeholder>) => {
-    onChange({
-      ...template,
-      placeholders: template.placeholders.map((p) => p.id === id ? { ...p, ...attr } : p),
+    setHistory({
+      ...currentTemplate,
+      placeholders: currentTemplate.placeholders.map((p) => p.id === id ? { ...p, ...attr } : p),
     });
   };
 
   const updateTemplate = (attr: Partial<Template>) => {
-    onChange({ ...template, ...attr });
+    setHistory({ ...currentTemplate, ...attr });
   };
 
   const removeSelected = () => {
     if (!selectedId) return;
-    onChange({
-      ...template,
-      placeholders: template.placeholders.filter((p) => p.id !== selectedId),
+    setHistory({
+      ...currentTemplate,
+      placeholders: currentTemplate.placeholders.filter((p) => p.id !== selectedId),
     });
     setSelectedId(null);
   };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Shortcuts
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        undo();
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) {
+        e.preventDefault();
+        redo();
+      }
+
       const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName);
       if (isInput) return;
 
@@ -67,12 +103,10 @@ export default function TemplateDesigner({ template, onChange, dataSample }: Pro
 
       // Quick type-to-rename: if user starts typing while an item is selected
       if (selectedId && /^[a-zA-Z0-9\s]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const input = document.querySelector('input[placeholder="e.g. Student Name"]') as HTMLInputElement;
+        const input = document.querySelector('input[placeholder="The text shown in designer..."]') as HTMLInputElement;
         if (input) {
           input.focus();
-          // To ensure the first character is captured and overwrites the selection
-          // we set the value manually if the input was focused via this shortcut
-          const p = template.placeholders.find(pl => pl.id === selectedId);
+          const p = currentTemplate.placeholders.find(pl => pl.id === selectedId);
           if (p) {
             updatePlaceholder(selectedId, { 
               label: e.key,
@@ -86,12 +120,36 @@ export default function TemplateDesigner({ template, onChange, dataSample }: Pro
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedId, template]);
+  }, [selectedId, currentTemplate, undo, redo]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 w-full max-w-7xl mx-auto p-6 text-slate-900 animate-in fade-in duration-700">
+    <div className="flex flex-col lg:flex-row gap-6 w-full max-w-7xl mx-auto p-6 text-slate-900 animate-in fade-in duration-700 relative">
+      <div className="absolute top-10 left-[400px] z-50 flex items-center gap-2 p-1.5 bg-white/90 backdrop-blur-md rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={undo}
+          disabled={!canUndo}
+          className={`p-2.5 rounded-xl transition-all ${canUndo ? 'text-slate-900 hover:bg-slate-50' : 'text-slate-300'}`}
+          title="Undo (Ctrl+Z)"
+        >
+          <Undo2 size={18} />
+        </motion.button>
+        <div className="h-4 w-px bg-slate-100 mx-0.5" />
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={redo}
+          disabled={!canRedo}
+          className={`p-2.5 rounded-xl transition-all ${canRedo ? 'text-slate-900 hover:bg-slate-50' : 'text-slate-300'}`}
+          title="Redo (Ctrl+Y)"
+        >
+          <Redo2 size={18} />
+        </motion.button>
+      </div>
+
       <DesignerToolbar 
-        template={template} 
+        template={currentTemplate} 
         selectedId={selectedId}
         addPlaceholder={addPlaceholder}
         updateTemplate={updateTemplate}
@@ -99,7 +157,7 @@ export default function TemplateDesigner({ template, onChange, dataSample }: Pro
         removeSelected={removeSelected}
       />
       <CanvasArea 
-        template={template} 
+        template={currentTemplate} 
         selectedId={selectedId} 
         setSelectedId={setSelectedId}
         updatePlaceholder={updatePlaceholder}
