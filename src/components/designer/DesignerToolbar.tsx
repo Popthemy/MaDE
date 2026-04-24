@@ -35,7 +35,15 @@ export const DesignerToolbar: React.FC<DesignerToolbarProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      updateTemplate({ backgroundUrl: url });
+      const img = new Image();
+      img.src = url;
+      img.onload = () => {
+        updateTemplate({ 
+          backgroundUrl: url,
+          width: img.width,
+          height: img.height
+        });
+      };
     }
   };
 
@@ -167,19 +175,28 @@ export const DesignerToolbar: React.FC<DesignerToolbarProps> = ({
 
               {/* Text Layout Controls */}
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Text Layout</label>
-                <div className="flex gap-2 p-1 bg-slate-50 border border-slate-100 rounded-xl">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Text Style</label>
+                <div className="flex gap-2">
+                  <div className="flex gap-1 p-1 bg-slate-50 border border-slate-100 rounded-xl grow">
+                    <button 
+                      onClick={() => updatePlaceholder(selectedId!, { wrap: 'none' })}
+                      className={`flex-1 py-2 rounded-lg text-[10px] font-bold transition-all ${selectedPlaceholder.wrap === 'none' || !selectedPlaceholder.wrap ? 'bg-white text-brand-primary shadow-sm ring-1 ring-slate-200' : 'text-slate-400 hover:bg-white/50'}`}
+                    >
+                      Single
+                    </button>
+                    <button 
+                      onClick={() => updatePlaceholder(selectedId!, { wrap: 'word' })}
+                      className={`flex-1 py-2 rounded-lg text-[10px] font-bold transition-all ${selectedPlaceholder.wrap === 'word' ? 'bg-white text-brand-primary shadow-sm ring-1 ring-slate-200' : 'text-slate-400 hover:bg-white/50'}`}
+                    >
+                      Wrap
+                    </button>
+                  </div>
                   <button 
-                    onClick={() => updatePlaceholder(selectedId!, { wrap: 'none' })}
-                    className={`flex-1 py-2 rounded-lg text-[10px] font-bold transition-all ${selectedPlaceholder.wrap === 'none' || !selectedPlaceholder.wrap ? 'bg-white text-brand-primary shadow-sm ring-1 ring-slate-200' : 'text-slate-400 hover:bg-white/50'}`}
+                    onClick={() => updatePlaceholder(selectedId!, { fontWeight: selectedPlaceholder.fontWeight === 'bold' ? 'normal' : 'bold' })}
+                    className={`px-4 rounded-xl border transition-all ${selectedPlaceholder.fontWeight === 'bold' ? 'bg-brand-primary border-brand-primary text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-brand-primary/40'}`}
+                    title="Bold"
                   >
-                    Single Line
-                  </button>
-                  <button 
-                    onClick={() => updatePlaceholder(selectedId!, { wrap: 'word' })}
-                    className={`flex-1 py-2 rounded-lg text-[10px] font-bold transition-all ${selectedPlaceholder.wrap === 'word' ? 'bg-white text-brand-primary shadow-sm ring-1 ring-slate-200' : 'text-slate-400 hover:bg-white/50'}`}
-                  >
-                    Wrap (Multi-line)
+                    <span className="font-black">B</span>
                   </button>
                 </div>
               </div>

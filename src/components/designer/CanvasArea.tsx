@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Stage, Layer, Rect, Image as KonvaImage } from 'react-konva';
 import { Move } from 'lucide-react';
-import { Template, Placeholder } from '../../types';
+import { Template, Placeholder, DesignData } from '../../types';
 import { DEFAULT_CANVAS_SIZE } from '../../constants';
 import { PlaceholderItem } from './PlaceholderItem';
 
@@ -10,13 +10,15 @@ interface CanvasAreaProps {
   selectedId: string | null;
   setSelectedId: (id: string | null) => void;
   updatePlaceholder: (id: string, attr: Partial<Placeholder>) => void;
+  dataSample?: DesignData;
 }
 
 export const CanvasArea: React.FC<CanvasAreaProps> = ({ 
   template, 
   selectedId, 
   setSelectedId, 
-  updatePlaceholder 
+  updatePlaceholder,
+  dataSample
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<any>(null);
@@ -27,8 +29,11 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
   useEffect(() => {
     const updateScale = () => {
       if (containerRef.current) {
-        const width = containerRef.current.offsetWidth;
-        setCanvasScale(width / DEFAULT_CANVAS_SIZE);
+        const containerWidth = containerRef.current.parentElement?.offsetWidth || 0;
+        const containerHeight = containerRef.current.parentElement?.offsetHeight || 0;
+        const scaleW = (containerWidth - 64) / template.width;
+        const scaleH = (containerHeight - 64) / template.height;
+        setCanvasScale(Math.min(scaleW, scaleH, 1));
       }
     };
     updateScale();
@@ -53,10 +58,14 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
   }, [template.backgroundUrl]);
 
   return (
-    <div className="flex-1 flex justify-center bg-slate-50 items-start overflow-hidden rounded-[3rem] relative p-8 group border border-slate-100 shadow-inner">
+    <div className="flex-1 flex justify-center bg-slate-50 items-center overflow-auto rounded-[3rem] relative p-12 group border border-slate-100 shadow-inner">
       <div 
         ref={containerRef}
-        className="impact-shadow bg-white w-full max-w-[600px] aspect-square relative border border-slate-200 rounded-2xl overflow-hidden shadow-2xl"
+        className="impact-shadow bg-white relative border border-slate-200 rounded-lg overflow-hidden shadow-2xl transition-all"
+        style={{ 
+          width: template.width * canvasScale, 
+          height: template.height * canvasScale,
+        }}
       >
         {isBgLoading && (
           <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-md flex flex-col items-center justify-center gap-4 animate-in fade-in duration-300">
@@ -66,8 +75,8 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
         )}
         <div className="w-full h-full">
            <Stage 
-            width={DEFAULT_CANVAS_SIZE * canvasScale} 
-            height={DEFAULT_CANVAS_SIZE * canvasScale}
+            width={template.width * canvasScale} 
+            height={template.height * canvasScale}
             ref={stageRef}
             onMouseDown={(e) => {
               if (e.target === e.target.getStage()) {
@@ -78,12 +87,12 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
             scaleY={canvasScale}
           >
             <Layer>
-              <Rect width={DEFAULT_CANVAS_SIZE} height={DEFAULT_CANVAS_SIZE} fill="#FFFFFF" />
+              <Rect width={template.width} height={template.height} fill="#FFFFFF" />
               {bgImage && (
                 <KonvaImage 
                   image={bgImage} 
-                  width={DEFAULT_CANVAS_SIZE} 
-                  height={DEFAULT_CANVAS_SIZE} 
+                  width={template.width} 
+                  height={template.height} 
                 />
               )}
               {template.placeholders.map((p) => (
@@ -93,6 +102,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
                   isSelected={p.id === selectedId}
                   onSelect={() => setSelectedId(p.id)}
                   onChange={(attr) => updatePlaceholder(p.id, attr)}
+                  dataSample={dataSample}
                 />
               ))}
             </Layer>

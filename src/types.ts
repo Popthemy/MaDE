@@ -18,6 +18,7 @@ export interface Placeholder {
   offsetX?: number; // Pan X for images
   offsetY?: number; // Pan Y for images
   wrap?: 'word' | 'char' | 'none'; // Text wrapping mode
+  fontWeight?: string | number;
 }
 
 export interface Template {

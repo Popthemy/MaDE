@@ -73,24 +73,26 @@ export async function renderDesign(template: Template, data: DesignData): Promis
         }
 
         if (p.type === 'text') {
-          const text = data.values[p.key] || `{${p.key}}`;
+          const text = data.values[p.key] || p.label || `{${p.key}}`;
           ctx.font = `${p.fontSize}px ${p.fontFamily || 'Inter'}`;
           ctx.fillStyle = p.fill || '#FFFFFF';
           ctx.textAlign = (p.align as CanvasTextAlign) || 'left';
           ctx.textBaseline = 'middle';
           
+          const drawY = p.height / 2;
           let drawX = 0;
           if (p.align === 'center') drawX = p.width / 2;
           if (p.align === 'right') drawX = p.width;
 
+          const fontWeight = p.fontWeight === 'bold' ? 'bold ' : '';
+          
           if (p.wrap === 'word' || p.wrap === 'char') {
             let currentFontSize = p.fontSize || 24;
             let lines: string[] = [];
             
-            // Auto-resize font if any single word is wider than the container
             const words = text.split(' ');
             const calculateLines = (fSize: number) => {
-              ctx.font = `${fSize}px ${p.fontFamily || 'Inter'}`;
+              ctx.font = `${fontWeight}${fSize}px ${p.fontFamily || 'Inter'}`;
               const lns: string[] = [];
               let line = '';
               for (let n = 0; n < words.length; n++) {
@@ -106,34 +108,34 @@ export async function renderDesign(template: Template, data: DesignData): Promis
               return lns;
             };
 
-            // Ensure even the longest word fits or we hit minimum size
-            while (currentFontSize > 8) {
-              ctx.font = `${currentFontSize}px ${p.fontFamily || 'Inter'}`;
-              const hasOverflowingWord = words.some(w => ctx.measureText(w).width > p.width);
-              if (!hasOverflowingWord) break;
-              currentFontSize -= 1;
+            // Font Shrinking to fit HEIGHT and WIDTH
+            while (currentFontSize > 6) {
+              lines = calculateLines(currentFontSize);
+              const lineHeight = currentFontSize * 1.2;
+              const maxWidth = Math.max(...lines.map(l => ctx.measureText(l).width));
+              
+              if (lines.length * lineHeight <= p.height && maxWidth <= p.width) break;
+              currentFontSize -= 0.5;
             }
 
-            lines = calculateLines(currentFontSize);
             const lineHeight = currentFontSize * 1.2;
-            ctx.font = `${currentFontSize}px ${p.fontFamily || 'Inter'}`;
-
             const totalHeight = lines.length * lineHeight;
             let startY = (p.height - totalHeight) / 2 + lineHeight / 2;
 
+            ctx.font = `${fontWeight}${currentFontSize}px ${p.fontFamily || 'Inter'}`;
             lines.forEach((l, i) => {
               ctx.fillText(l.trim(), drawX, startY + i * lineHeight);
             });
           } else {
-            // Auto-resize text helper (Single line)
             let currentFontSize = p.fontSize || 24;
-            ctx.font = `${currentFontSize}px ${p.fontFamily || 'Inter'}`;
-            while (ctx.measureText(text).width > p.width && currentFontSize > 10) {
-              currentFontSize -= 2;
-              ctx.font = `${currentFontSize}px ${p.fontFamily || 'Inter'}`;
+            ctx.font = `${fontWeight}${currentFontSize}px ${p.fontFamily || 'Inter'}`;
+            while (ctx.measureText(text).width > p.width && currentFontSize > 8) {
+              currentFontSize -= 1;
+              ctx.font = `${fontWeight}${currentFontSize}px ${p.fontFamily || 'Inter'}`;
             }
             
-            ctx.fillText(text, drawX, p.height / 2);
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, drawX, drawY);
           }
         } else {
           const loaded = loadedImages.find(li => li.p.id === p.id);

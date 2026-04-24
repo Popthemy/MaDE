@@ -145,7 +145,11 @@ export default function App() {
                             </div>
                           </div>
                        </div>
-                       <TemplateDesigner template={template} onChange={setTemplate} />
+                       <TemplateDesigner 
+                         template={template} 
+                         onChange={setTemplate} 
+                         dataSample={data[0]} 
+                       />
                     </section>
 
                     <section id="data-input" className="mb-20">

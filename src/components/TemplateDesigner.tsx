@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Placeholder, Template } from '../types';
+import { Placeholder, Template, DesignData } from '../types';
 import { DesignerToolbar } from './designer/DesignerToolbar';
 import { CanvasArea } from './designer/CanvasArea';
 
 interface Props {
   template: Template;
   onChange: (template: Template) => void;
+  dataSample?: DesignData;
 }
 
-export default function TemplateDesigner({ template, onChange }: Props) {
+export default function TemplateDesigner({ template, onChange, dataSample }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const addPlaceholder = (type: 'text' | 'image', isFrame = false) => {
@@ -102,6 +103,7 @@ export default function TemplateDesigner({ template, onChange }: Props) {
         selectedId={selectedId} 
         setSelectedId={setSelectedId}
         updatePlaceholder={updatePlaceholder}
+        dataSample={dataSample}
       />
     </div>
   );

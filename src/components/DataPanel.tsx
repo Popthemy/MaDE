@@ -202,19 +202,19 @@ export default function DataPanel({ template, data, onDataChange, onGenerate, is
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-6">
-          <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-sm overflow-hidden overflow-x-auto max-h-[600px] relative scrollbar-hide">
+        <div className="flex flex-col gap-6 h-[600px]">
+          <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-sm overflow-auto relative flex-1">
              <table className="w-full text-left border-separate border-spacing-0">
-                <thead className="sticky top-0 z-20">
-                   <tr className="bg-slate-50/95 backdrop-blur-sm border-b border-slate-100">
-                      <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100 w-16">#</th>
+                <thead className="sticky top-0 z-30">
+                   <tr className="bg-slate-50/95 backdrop-blur-sm">
+                      <th className="sticky top-0 z-40 p-6 text-[10px] font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100 w-16 bg-slate-50/95 backdrop-blur-sm">#</th>
                       {allKeys.map(key => {
                         const isMainKey = templateKeys.includes(key);
                         const placeholder = template.placeholders.find(p => p.key === key);
                         const displayLabel = placeholder?.label || key;
                         
                         return (
-                          <th key={key} className="p-6 text-slate-400 border-b border-slate-100 whitespace-nowrap min-w-[200px]">
+                          <th key={key} className="sticky top-0 z-40 p-6 text-slate-400 border-b border-slate-100 whitespace-nowrap min-w-[200px] bg-slate-50/95 backdrop-blur-sm">
                              <div className="flex flex-col gap-1.5 items-start">
                                 <div className="flex items-center gap-2">
                                    {isImageKey(key) && <ImageIcon size={14} className="text-brand-secondary" />}

@@ -1,33 +1,36 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Group, Rect, Text, Image as KonvaImage, Transformer } from 'react-konva';
-import { Placeholder } from '../../types';
+import { Placeholder, DesignData } from '../../types';
 
 interface PlaceholderItemProps {
   placeholder: Placeholder;
   isSelected: boolean;
   onSelect: () => void;
   onChange: (attr: Partial<Placeholder>) => void;
+  dataSample?: DesignData;
 }
 
 export const PlaceholderItem: React.FC<PlaceholderItemProps> = ({ 
   placeholder, 
   isSelected, 
   onSelect, 
-  onChange 
+  onChange,
+  dataSample
 }) => {
   const shapeRef = useRef<any>(null);
   const trRef = useRef<any>(null);
   const [img, setImg] = useState<HTMLImageElement | null>(null);
 
   useEffect(() => {
-    if (placeholder.staticUrl) {
+    const url = (dataSample?.values && dataSample.values[placeholder.key]) || placeholder.staticUrl;
+    if (url) {
       const image = new Image();
-      image.src = placeholder.staticUrl;
+      image.src = url;
       image.onload = () => setImg(image);
     } else {
       setImg(null);
     }
-  }, [placeholder.staticUrl]);
+  }, [placeholder.staticUrl, dataSample?.values[placeholder.key]]);
 
   useEffect(() => {
     if (isSelected && trRef.current && shapeRef.current) {
@@ -35,6 +38,46 @@ export const PlaceholderItem: React.FC<PlaceholderItemProps> = ({
       trRef.current.getLayer().batchDraw();
     }
   }, [isSelected]);
+
+  const getCrop = () => {
+    if (!img) return { x: 0, y: 0, width: 0, height: 0 };
+    
+    // Base cover logic
+    const aspect = img.width / img.height;
+    const targetAspect = placeholder.width / placeholder.height;
+    
+    let sx, sy, sw, sh;
+    if (aspect > targetAspect) {
+      sh = img.height;
+      sw = img.height * targetAspect;
+      sx = (img.width - sw) / 2;
+      sy = 0;
+    } else {
+      sw = img.width;
+      sh = img.width / targetAspect;
+      sx = 0;
+      sy = (img.height - sh) / 2;
+    }
+
+    // Apply zoom and offsets on top of cover
+    const zoom = placeholder.zoom || 1;
+    const finalSw = sw / zoom;
+    const finalSh = sh / zoom;
+    
+    // Recenter
+    const centerX = sx + sw / 2;
+    const centerY = sy + sh / 2;
+    
+    const finalSx = centerX - finalSw / 2 + (placeholder.offsetX || 0) * (img.width / 100);
+    const finalSy = centerY - finalSh / 2 + (placeholder.offsetY || 0) * (img.height / 100);
+
+    return {
+      x: Math.max(0, Math.min(img.width - finalSw, finalSx)),
+      y: Math.max(0, Math.min(img.height - finalSh, finalSy)),
+      width: finalSw,
+      height: finalSh
+    };
+  };
 
   const handleDragEnd = (e: any) => {
     onChange({
@@ -103,11 +146,12 @@ export const PlaceholderItem: React.FC<PlaceholderItemProps> = ({
         />
         {placeholder.type === 'text' ? (
           <Text
-            text={`{${placeholder.label}}`}
+            text={dataSample?.values[placeholder.key] || placeholder.label || `{${placeholder.key}}`}
             width={placeholder.width}
             height={placeholder.height}
             fontSize={placeholder.fontSize}
             fontFamily={placeholder.fontFamily}
+            fontStyle={placeholder.fontWeight === 'bold' ? 'bold' : 'normal'}
             fill={placeholder.fill}
             align={placeholder.align}
             verticalAlign="middle"
@@ -120,12 +164,7 @@ export const PlaceholderItem: React.FC<PlaceholderItemProps> = ({
                 image={img} 
                 width={placeholder.width} 
                 height={placeholder.height}
-                crop={{
-                  x: (img.width / 2) * (1 - 1/(placeholder.zoom || 1)) + (placeholder.offsetX || 0) * (img.width / 100),
-                  y: (img.height / 2) * (1 - 1/(placeholder.zoom || 1)) + (placeholder.offsetY || 0) * (img.height / 100),
-                  width: img.width / (placeholder.zoom || 1),
-                  height: img.height / (placeholder.zoom || 1)
-                }}
+                crop={getCrop()}
               />
             ) : (
               <>
