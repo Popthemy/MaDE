@@ -1,0 +1,38 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-brand-primary: #7C3AED;
+  --color-brand-accent: #22C55E;
+  --color-brand-secondary: #0EA5E9;
+  --color-brand-background: #FFFFFF;
+  
+  /* Legacy aliases for transition */
+  --color-zoho-navy: #f8fafc;
+  --color-zoho-ink: #FFFFFF;
+  --color-zoho-accent: #7C3AED;
+}
+
+@layer base {
+  body {
+    @apply bg-brand-background text-slate-900 antialiased;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+}
+
+.impact-shadow {
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
+}
+
+.glass-panel {
+  @apply bg-white border border-slate-200 shadow-sm;
+}
+

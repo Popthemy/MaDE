@@ -1,0 +1,6 @@
+{
+  "name": "MassDesign | Bulk Design Automation",
+  "description": "Design once, generate hundreds of profiles in seconds. MassDesign is a high-speed bulk graphics engine that allows organizations to create professional assets at scale without design repetition.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["bulk_generation", "canvas_editor", "csv_import"]
+}
