@@ -76,7 +76,10 @@ export default function BulkPreview({ data, template, onBack, onEdit }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {data.map((item) => (
           <div key={item.id} className="group relative flex flex-col gap-4 bg-white p-4 rounded-3xl border border-slate-100 hover:border-brand-primary/20 transition-all impact-shadow shadow-sm">
-             <div className="aspect-square relative overflow-hidden rounded-2xl bg-slate-50 border border-slate-100">
+             <div 
+                className="relative overflow-hidden rounded-2xl bg-slate-50 border border-slate-100 w-full shadow-inner"
+                style={{ aspectRatio: `${template.width} / ${template.height}` }}
+             >
                 {item.previewUrl ? (
                    <img 
                       src={item.previewUrl} 

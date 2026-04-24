@@ -46,7 +46,9 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({ data, template, onCl
       .filter(item => {
         return template.placeholders.some(p => {
           const val = item.values[p.key];
-          return !val || (typeof val === 'string' && val.trim() === '');
+          const hasVal = val !== undefined && val !== null && String(val).trim() !== '';
+          const isOptional = p.type === 'image' && !!p.staticUrl;
+          return !hasVal && !isOptional;
         });
       })
       .map(item => item.id);
@@ -55,7 +57,8 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({ data, template, onCl
       .filter(item => {
         return template.placeholders.filter(p => p.type === 'text' && p.wrap !== 'word').some(p => {
           const val = String(item.values[p.key] || '');
-          return (val.length * (p.fontSize || 24) * 0.5) > p.width * 1.2;
+          // Heuristic for overflow in non-wrapping fields
+          return (val.length * (p.fontSize || 24) * 0.5) > p.width * 1.5;
         });
       })
       .map(item => item.id);

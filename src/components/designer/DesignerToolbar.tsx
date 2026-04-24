@@ -152,24 +152,44 @@ export const DesignerToolbar: React.FC<DesignerToolbarProps> = ({
           <div className="flex flex-col gap-6">
             <div className="space-y-4">
               <div>
-                <label className="text-[10px] text-slate-400 uppercase tracking-widest mb-1.5 block font-bold">Label</label>
+                <label className="text-[10px] text-slate-400 uppercase tracking-widest mb-1.5 block font-bold">Field Label</label>
                 <input 
                   ref={labelInputRef}
                   type="text" 
                   value={selectedPlaceholder.label}
                   onChange={(e) => {
-                    const newLabel = e.target.value;
-                    const newKey = newLabel.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-                    updatePlaceholder(selectedId!, { 
-                      label: newLabel,
-                      key: newKey 
-                    });
+                    updatePlaceholder(selectedId!, { label: e.target.value });
                   }}
                   className="w-full bg-slate-50 border border-slate-100 rounded-lg px-3 py-3 text-sm focus:border-brand-primary focus:bg-white outline-none font-bold"
-                  placeholder="e.g. Student Name"
+                  placeholder="The text shown in designer..."
                 />
-                <p className="text-[9px] text-slate-400 mt-2 italic font-medium">
-                  Data Key: <span className="text-brand-primary font-mono">{`{${selectedPlaceholder.key}}`}</span>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-[10px] text-slate-400 uppercase tracking-widest block font-bold">Mapping Key</label>
+                  <button 
+                    onClick={() => {
+                      const newKey = selectedPlaceholder.label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+                      updatePlaceholder(selectedId!, { key: newKey });
+                    }}
+                    className="text-[9px] text-brand-primary font-bold uppercase hover:underline"
+                  >
+                    Sync to Label
+                  </button>
+                </div>
+                <input 
+                  type="text" 
+                  value={selectedPlaceholder.key}
+                  onChange={(e) => {
+                    const cleanKey = e.target.value.replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+                    updatePlaceholder(selectedId!, { key: cleanKey });
+                  }}
+                  className="w-full bg-slate-900 text-white rounded-lg px-3 py-2 font-mono text-[11px] focus:ring-2 focus:ring-brand-primary outline-none"
+                  placeholder="CSV Column Name..."
+                />
+                <p className="text-[9px] text-slate-400 mt-2 font-medium">
+                  Maps to table column: <span className="text-brand-primary font-bold">{`{${selectedPlaceholder.key}}`}</span>
                 </p>
               </div>
 
