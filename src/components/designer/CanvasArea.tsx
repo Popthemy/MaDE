@@ -29,17 +29,38 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
   useEffect(() => {
     const updateScale = () => {
       if (containerRef.current) {
-        const containerWidth = containerRef.current.parentElement?.offsetWidth || 0;
-        const containerHeight = containerRef.current.parentElement?.offsetHeight || 0;
-        const scaleW = (containerWidth - 64) / template.width;
-        const scaleH = (containerHeight - 64) / template.height;
-        setCanvasScale(Math.min(scaleW, scaleH, 1));
+        const parent = containerRef.current.parentElement;
+        if (!parent) return;
+        
+        const containerWidth = parent.offsetWidth || 0;
+        const containerHeight = parent.offsetHeight || 0;
+        
+        // Use a safer margin for the scale calculation
+        const scaleW = (containerWidth - 96) / template.width;
+        const scaleH = (containerHeight - 96) / template.height;
+        
+        const newScale = Math.min(scaleW, scaleH, 1);
+        setCanvasScale(newScale);
       }
     };
+
     updateScale();
+    
+    // Using ResizeObserver for more robust scaling
+    const resizeObserver = new ResizeObserver(() => {
+      updateScale();
+    });
+
+    if (containerRef.current?.parentElement) {
+      resizeObserver.observe(containerRef.current.parentElement);
+    }
+    
     window.addEventListener('resize', updateScale);
-    return () => window.removeEventListener('resize', updateScale);
-  }, []);
+    return () => {
+      window.removeEventListener('resize', updateScale);
+      resizeObserver.disconnect();
+    };
+  }, [template.width, template.height]);
 
   useEffect(() => {
     if (template.backgroundUrl) {

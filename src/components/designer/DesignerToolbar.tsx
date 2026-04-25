@@ -38,10 +38,34 @@ export const DesignerToolbar: React.FC<DesignerToolbarProps> = ({
       const img = new Image();
       img.src = url;
       img.onload = () => {
+        const oldW = template.width;
+        const oldH = template.height;
+        const newW = img.width;
+        const newH = img.height;
+
+        // Auto-scale existing design to match new resolution
+        // This prevents elements from "shrinking" and moving to the corner
+        // when uploading a high-res backdrop
+        let updatedPlaceholders = template.placeholders;
+        if (oldW > 0 && oldH > 0 && updatedPlaceholders.length > 0) {
+          const ratioW = newW / oldW;
+          const ratioH = newH / oldH;
+          
+          updatedPlaceholders = updatedPlaceholders.map(p => ({
+            ...p,
+            x: p.x * ratioW,
+            y: p.y * ratioH,
+            width: p.width * ratioW,
+            height: p.height * ratioH,
+            fontSize: p.fontSize ? Math.round(p.fontSize * ((ratioW + ratioH) / 2)) : p.fontSize
+          }));
+        }
+
         updateTemplate({ 
           backgroundUrl: url,
-          width: img.width,
-          height: img.height
+          width: newW,
+          height: newH,
+          placeholders: updatedPlaceholders
         });
       };
     }

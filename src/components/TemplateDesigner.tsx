@@ -43,17 +43,26 @@ export default function TemplateDesigner({ template, onChange, dataSample }: Pro
     const count = currentTemplate.placeholders.filter(p => p.type === type).length;
     const keyBase = isFrame ? 'frame' : (type === 'text' ? 'field' : 'photo');
     
+    // Scale baseline defaults (optimized for 1080p) to the current template resolution
+    const resolutionScale = Math.max(0.5, (currentTemplate.width + currentTemplate.height) / 2160);
+    
     const newPlaceholder: Placeholder = {
       id: newId,
       type,
       key: `${keyBase}_${count + 1}`,
       label: `${isFrame ? 'Frame' : type === 'text' ? 'Text Field' : 'Image Field'} ${count + 1}`,
-      x: 100,
-      y: 100,
-      width: 200,
-      height: type === 'text' ? 50 : 200,
+      x: Math.round(100 * resolutionScale),
+      y: Math.round(100 * resolutionScale),
+      width: Math.round((type === 'text' ? 400 : 200) * resolutionScale),
+      height: Math.round((type === 'text' ? 80 : 200) * resolutionScale),
       isFrame,
-      ...(type === 'text' ? { fontSize: 24, fill: '#FFFFFF', fontFamily: 'Inter', align: 'left' } : {}),
+      ...(type === 'text' ? { 
+        fontSize: Math.round(32 * resolutionScale), 
+        fill: '#FFFFFF', 
+        fontFamily: 'Inter', 
+        align: 'left',
+        wrap: 'none'
+      } : {}),
     };
     setHistory({
       ...currentTemplate,
